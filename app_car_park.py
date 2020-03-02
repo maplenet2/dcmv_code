@@ -182,29 +182,7 @@ def parking_detector(frame):
 	t = time.localtime()
 	
 	# Check if detected object is a valid motor vehicle, (1 = Sedan, 2 = Truck, 3 = Bus, 4 = Motorcycle)
-	# Then get the center x and y position:
-	'''i = 0
-	while i < len(boxes[0]):
-		if float(scores[0][i]) > AVG_CONFIDENCE_THRESHOLD:
-			x_coord.append(int(((boxes[0][i][1]+boxes[0][i][3])/2)*IM_WIDTH))
-			y_coord.append(int(((boxes[0][i][0]+boxes[0][i][2])/2)*IM_HEIGHT))
-			
-			vehicle_count = vehicle_count + 1
-			vehicle_classes.append(i)
-		i = i + 1
-		
-	i = 0
-	while i < vehicle_count:
-		object_class = int(classes[0][vehicle_classes[i]])
-		if((object_class == 3 or object_class == 4 or object_class == 6 or object_class == 8)): #and (pause == 0)):
-			j = 0
-			while(j < len(parking_spot_br)):
-				if ((x_coord[i] > parking_spot_tl[j][0]) and (x_coord[i] < parking_spot_br[j][0]) and (y_coord[i] > parking_spot_tl[j][1]) and (y_coord[i] < parking_spot_br[j][1])):
-					park_inspace[j] = True
-				cv2.circle(frame,(x_coord[i],y_coord[i]), 5, (75,13,180), -1)
-				j = j + 1
-		i = i + 1'''
-		
+	# Then get the center x and y position:		
 	i = 0
 	while i < len(boxes[0]):
 		object_class = int(classes[0][i])
@@ -216,43 +194,49 @@ def parking_detector(frame):
 				j = 0
 				while(j < len(parking_spot_br)):
 					if ((x_temp > parking_spot_tl[j][0]) and (x_temp < parking_spot_br[j][0]) and (y_temp > parking_spot_tl[j][1]) and (y_temp < parking_spot_br[j][1])):
-						park_inspace[j] = True
+						#park_inspace[j] = True
+						cv2.putText(frame,'Vehicles in Frame: ' + str(park_inspace),(10,270),font,0.5,(51,51,255),1,cv2.LINE_AA)
+						park_inspace[j] = False		
+						park_counter[j] = park_counter[j] + 1
+						buffer_counter[j] = 0
+						if grab_vehicle[j] == 0:
+							grab_object_class[j] = object_class
+							grab_vehicle[j] = 1
 					j = j + 1
 		i = i + 1
 		
-	j = 0
-	while j < 4:
-		if park_inspace[j] == True:
+	i = 0
+	while i < 4:
+		if park_inspace[i] == True:
+			'''
 			cv2.putText(frame,'Vehicles in Frame: ' + str(park_inspace),(10,270),font,0.5,(51,51,255),1,cv2.LINE_AA)
-			park_inspace[j] = False		
-			park_counter[j] = park_counter[j] + 1
-			buffer_counter[j] = 0
-			if grab_vehicle[j] == 0:
-				grab_object_class[j] = object_class
-				grab_vehicle[j] = 1
-		elif park_counter[j] > 0:
-			buffer_counter[j] = buffer_counter[j] + 1
-		j = j + 1
-	
-	k = 0
-	while k < 4:
-	# If no vehicle is within the spot (false alarm), buffer by counting up to 50 frames then reset counters
-		if buffer_counter[k] > 50:
-			buffer_counter[k] = 0		
-			park_counter[k] = 0
-			pause[k] = 0
-			grab_vehicle[k] = 0
-			park_detector[k] = False
+			park_inspace[i] = False		
+			park_counter[i] = park_counter[i] + 1
+			buffer_counter[i] = 0
+			if grab_vehicle[i] == 0:
+				grab_object_class[i] = object_class
+				grab_vehicle[i] = 1
+			'''
+		elif park_counter[i] > 0:
+			buffer_counter[i] = buffer_counter[i] + 1
+
+		# If no vehicle is within the spot (false alarm), buffer by counting up to 50 frames then reset counters
+		if buffer_counter[i] > 50:
+			buffer_counter[i] = 0		
+			park_counter[i] = 0
+			pause[i] = 0
+			grab_vehicle[i] = 0
+			park_detector[i] = False
 			end_time = time.strftime("%H:%M:%S", t)
 			datafile = open("datatext.txt", "a+")
 			idfile = open("entryid.txt", "r+")
 			entry_id = int(idfile.read())
 			datafile.write("%d\t" % entry_id) #Unique key (for SQL)
-			spot = k + 1
+			spot = i + 1
 			datafile.write("%d\t" % spot) #Parking spot
 			datafile.write("%s\t" % start_time) #Need to set entry_time when car occupies spot
 			datafile.write("%s\t" % end_time) #Need to set exit time when car leaves spot
-			datafile.write("%s\t" % vehicle_kind[k]) #Vehicle type
+			datafile.write("%s\t" % vehicle_kind[i]) #Vehicle type
 			datafile.write("%d\n" % entry_id) #repetition
 			datafile.close()
 			entry_id = entry_id + 1
@@ -262,16 +246,16 @@ def parking_detector(frame):
 			idfile.close()
 
 		# If vehicle is within a spot for more than 30 frames, set park_detector flag
-		if ((park_counter[k] > 30) and (pause[k] == 0)):
-			park_detector[k] = True
-			pause[k] = 1	
+		if ((park_counter[i] > 30) and (pause[i] == 0)):
+			park_detector[i] = True
+			pause[i] = 1	
 			start_time = time.strftime("%H:%M:%S", t)	
 			
 		# If pause flag is set, draw message on screen
-		if pause[k] == 1:
-			if park_detector[k] == True:
-				offset = int(20*k)
-				spot_num = k + 1
+		if pause[i] == 1:
+			if park_detector[i] == True:
+				offset = int(20*i)
+				spot_num = i + 1
 				spot_name = str('Spot' + str(spot_num) + ' is occupied')
 				spot_time = str('Car parked at: ' + str(start_time))
 				spot_offset1 = int(190+offset)
@@ -280,17 +264,17 @@ def parking_detector(frame):
 				cv2.putText(frame,spot_time,(int(IM_WIDTH*.5),spot_offset1),font,.75,(51,51,255),2,cv2.LINE_AA)
 			
 		# Get name of object to be written in file
-		if grab_object_class[k] == 3:
-			vehicle_kind[k] = 'car'
-		elif grab_object_class[k] == 4:
-			vehicle_kind[k] = 'motorcycle'
-		elif grab_object_class[k] == 6:
-			vehicle_kind[k] = 'bus'
-		elif grab_object_class[k] == 8:
-			vehicle_kind[k] = 'truck'
+		if grab_object_class[i] == 3:
+			vehicle_kind[i] = 'car'
+		elif grab_object_class[i] == 4:
+			vehicle_kind[i] = 'motorcycle'
+		elif grab_object_class[i] == 6:
+			vehicle_kind[i] = 'bus'
+		elif grab_object_class[i] == 8:
+			vehicle_kind[i] = 'truck'
 		else:
-			vehicle_kind[k] = 'Unknown'
-		k = k + 1
+			vehicle_kind[i] = 'Unknown'
+		i = i + 1
 		
 	# Draw counter info
 	cv2.putText(frame,'Detection counter: ' + str(park_counter),(10,90),font,0.5,(51,51,255),1,cv2.LINE_AA)
