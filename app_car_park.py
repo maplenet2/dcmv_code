@@ -99,11 +99,11 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 # Initialize variables for parking spot detection
 buffer_counter = [0, 0, 0, 0]
+car_count = [0, 0, 0, 0]
 grab_vehicle = [0, 0, 0, 0]
 grab_object_class = [0, 0, 0, 0]
 park_detector = [False, False, False, False]
 park_counter = [0, 0, 0, 0]
-park_inspace = [False, False, False, False]
 pause = [0, 0, 0, 0]
 if VIDEO_NAME == 'test1-front.mp4':
 	parking_spot_tl = [(int(IM_WIDTH*0.09),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.38),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.69),int(IM_HEIGHT*0.5))]
@@ -111,11 +111,15 @@ if VIDEO_NAME == 'test1-front.mp4':
 else:
 	parking_spot_tl = [(int(IM_WIDTH*0.26),int(IM_HEIGHT*0.4)),(int(IM_WIDTH*0.44),int(IM_HEIGHT*0.4)),(int(IM_WIDTH*0.62),int(IM_HEIGHT*0.4))]
 	parking_spot_br = [(int(IM_WIDTH*0.43),int(IM_HEIGHT*0.65)),(int(IM_WIDTH*0.61),int(IM_HEIGHT*0.65)),(int(IM_WIDTH*0.79),int(IM_HEIGHT*0.65))]
+spot_count = len(parking_spot_tl)
 start_time = ''
 end_time = 'N/A'
 vehicle_kind = ['N/A', 'N/A', 'N/A', 'N/A']
-vehicle_count = 0
 entry_id = 0
+
+# Initialize session
+sidfile = open("sessionid.txt", "r+")
+session_id = int(sidfile.read())
 
 # Initialize Camera Section
 # 	Initialize for Jetson Nano integrated camera (the pi-camera v2)
@@ -135,8 +139,8 @@ if cap.isOpened():
 def parking_detector(frame):
 
 	# Set global variables
-	global park_detector, park_inspace
-	global buffer_counter, park_counter, pause, entry_id, grab_vehicle, grab_object_class, vehicle_count
+	global park_detector
+	global buffer_counter, car_count, park_counter, pause, entry_id, grab_vehicle, grab_object_class, session_id
 	global start_time, end_time, vehicle_kind
 	
 	# Intialize variables
@@ -144,6 +148,7 @@ def parking_detector(frame):
 	y_coord = []
 	vehicle_classes = []
 	object_class = 0
+	park_inspace = [False, False, False, False]
 	
 	# Read camera and grab RGB values of each pixel
 	frame_expanded = np.expand_dims(frame, axis=0)
@@ -157,6 +162,7 @@ def parking_detector(frame):
 	objects_boxes = np.squeeze(boxes)
 	objects_classes = np.squeeze(classes).astype(np.int32)
 	objects_scores = np.squeeze(scores)
+	objects_num = int(np.squeeze(num))
 	vis_util.visualize_boxes_and_labels_on_image_array(
 		frame,
 		np.atleast_2d(objects_boxes),
@@ -176,7 +182,6 @@ def parking_detector(frame):
 	
 	# Get class of detected object
 	object_scores = float(scores[0][0])
-	vehicle_count = 0
 	
 	# Get current time (from system)
 	t = time.localtime()
@@ -184,7 +189,7 @@ def parking_detector(frame):
 	# Check if detected object is a valid motor vehicle, (1 = Sedan, 2 = Truck, 3 = Bus, 4 = Motorcycle)
 	# Then get the center x and y position:		
 	i = 0
-	while i < len(boxes[0]):
+	while i < objects_num:
 		object_class = int(classes[0][i])
 		if (float(scores[0][i]) > AVG_CONFIDENCE_THRESHOLD):
 			if((object_class == 3 or object_class == 4 or object_class == 6 or object_class == 8)):
@@ -192,11 +197,9 @@ def parking_detector(frame):
 				y_temp = (int(((boxes[0][i][0]+boxes[0][i][2])/2)*IM_HEIGHT))
 				cv2.circle(frame,(x_temp,y_temp), 5, (75,13,180), -1)
 				j = 0
-				while(j < len(parking_spot_br)):
+				while(j < spot_count):
 					if ((x_temp > parking_spot_tl[j][0]) and (x_temp < parking_spot_br[j][0]) and (y_temp > parking_spot_tl[j][1]) and (y_temp < parking_spot_br[j][1])):
-						#park_inspace[j] = True
-						cv2.putText(frame,'Vehicles in Frame: ' + str(park_inspace),(10,270),font,0.5,(51,51,255),1,cv2.LINE_AA)
-						park_inspace[j] = False		
+						park_inspace[j] = True
 						park_counter[j] = park_counter[j] + 1
 						buffer_counter[j] = 0
 						if grab_vehicle[j] == 0:
@@ -206,18 +209,8 @@ def parking_detector(frame):
 		i = i + 1
 		
 	i = 0
-	while i < 4:
-		if park_inspace[i] == True:
-			'''
-			cv2.putText(frame,'Vehicles in Frame: ' + str(park_inspace),(10,270),font,0.5,(51,51,255),1,cv2.LINE_AA)
-			park_inspace[i] = False		
-			park_counter[i] = park_counter[i] + 1
-			buffer_counter[i] = 0
-			if grab_vehicle[i] == 0:
-				grab_object_class[i] = object_class
-				grab_vehicle[i] = 1
-			'''
-		elif park_counter[i] > 0:
+	while i < spot_count:
+		if park_counter[i] > 0:
 			buffer_counter[i] = buffer_counter[i] + 1
 
 		# If no vehicle is within the spot (false alarm), buffer by counting up to 50 frames then reset counters
@@ -237,7 +230,9 @@ def parking_detector(frame):
 			datafile.write("%s\t" % start_time) #Need to set entry_time when car occupies spot
 			datafile.write("%s\t" % end_time) #Need to set exit time when car leaves spot
 			datafile.write("%s\t" % vehicle_kind[i]) #Vehicle type
-			datafile.write("%d\n" % entry_id) #repetition
+			car_count[i] = car_count[i] + 1
+			datafile.write("%d\t" % car_count[i]) #car count
+			datafile.write("%d\n" % session_id) #session
 			datafile.close()
 			entry_id = entry_id + 1
 			idfile.seek(0)
@@ -285,47 +280,58 @@ def parking_detector(frame):
 	cv2.putText(frame,'Grab object class: ' + str(grab_object_class),(10,190),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Object class: ' + str(object_class),(10,210),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Object score: ' + str(object_scores),(10,230),font,0.5,(51,51,255),1,cv2.LINE_AA)
-	cv2.putText(frame,'Vehicle count: ' + str(vehicle_count),(10,250),font,0.5,(51,51,255),1,cv2.LINE_AA)
+	cv2.putText(frame,'Objects dectected: ' + str(objects_num),(10,250),font,0.5,(51,51,255),1,cv2.LINE_AA)
+	cv2.putText(frame,'Vehicles in Frame: ' + str(park_inspace),(10,270),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Veh x-coord: ' + str(x_coord),(10,290),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Veh y-coord: ' + str(y_coord),(10,310),font,0.5,(51,51,255),1,cv2.LINE_AA)
-	
-	#print(sys.getsizeof(park_counter))
+	cv2.putText(frame,'Session: ' + str(session_id),(10,330),font,0.5,(51,51,255),1,cv2.LINE_AA)
+	cv2.putText(frame,'Car count: ' + str(car_count),(10,350),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	
 	return frame
 
 # Run main program	
 while cv2.getWindowProperty(WIN_NAME,0) >= 0:
+	try:
+		# Get initial tick value (used for calculating FPS)
+		t1 = cv2.getTickCount()
+		
+		# Read each frame
+		ret_val, frame = cap.read();
+		#frame.setflags(write=1)
+		
+		# Pass frame into detection function
+		frame = parking_detector(frame)
 
-	# Get initial tick value (used for calculating FPS)
-	t1 = cv2.getTickCount()
-	
-	# Read each frame
-	ret_val, frame = cap.read();
-	#frame.setflags(write=1)
-	
-	# Pass frame into detection function
-	frame = parking_detector(frame)
+		# Draw frames per second of the video
+		cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
 
-	# Draw frames per second of the video
-	cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
+		# Show image with overlapping drawings
+		cv2.imshow(WIN_NAME, frame)
 
-	# Show image with overlapping drawings
-	cv2.imshow(WIN_NAME, frame)
+		# Calculate FPS
+		t2 = cv2.getTickCount()
+		time1 = (t2-t1)/freq
+		frame_rate_calc = 1/time1
 
-	# Calculate FPS
-	t2 = cv2.getTickCount()
-	time1 = (t2-t1)/freq
-	frame_rate_calc = 1/time1
-
-	# Debug
-	#frame_count+=1
-	#if frame_count == 3:
-	#    break
-	if cv2.waitKey(1) == ord('q'):
+		# Debug
+		#frame_count+=1
+		#if frame_count == 3:
+		#    break
+		if cv2.waitKey(1) == ord('q'):
+			break
+		if cv2.waitKey(1) == ord('m'):
+			shutil.move("datatext.txt", "/media/team4/ECS")
+	except TypeError:
+		print('TypeError occurred. If video reached end duration, ignore this.')
 		break
-	if cv2.waitKey(1) == ord('m'):
-		shutil.move("datatext.txt", "/media/team4/ECS")
 
+# Write to session file
+session_id = session_id + 1
+sidfile.seek(0)
+sidfile.truncate()
+sidfile.write(str(session_id))
+sidfile.close()
+		
 # Cleanup video stream and windows
 cap.release()
 cv2.destroyAllWindows()
