@@ -29,7 +29,7 @@ FRAME_BUFFER = 5
 # Pathing and model setup
 WIN_NAME = 'Team 4 - Car Count' 	# Name of Window
 #VIDEO_NAME = 'count1.mp4'
-VIDEO_NAME = 'Enter Exit PS5.mp4'
+VIDEO_NAME = 'countlow.mp4'
 MODEL_NAME = 'faster_rcnn_inception_v2_coco_2018_01_28'  		# Name of the directory that contains the model to be used for prediction
 LABELS = 'mscoco_label_map.pbtxt' 			# .pbtxt file with the labels
 NUM_CLASSES = 80 					# Number of classes in the identifier model
@@ -75,6 +75,9 @@ entrance_pause = 0
 if VIDEO_NAME == 'Enter Exit PS5.mp4':
 	entrance_tl = (int(IM_WIDTH*0.3),int(IM_HEIGHT*0.38))
 	entrance_br = (int(IM_WIDTH*0.5),int(IM_HEIGHT*.43))
+elif VIDEO_NAME == 'countlow.mp4' or VIDEO_NAME == 'counthigh.mp4':
+	entrance_tl = (int(IM_WIDTH*0.27),int(IM_HEIGHT*0.51))
+	entrance_br = (int(IM_WIDTH*0.47),int(IM_HEIGHT*.61))
 else:
 	entrance_tl = (int(IM_WIDTH*0.7),int(IM_HEIGHT*0.05))
 	entrance_br = (int(IM_WIDTH*0.9),int(IM_HEIGHT*.95))
@@ -89,6 +92,9 @@ exit_pause = 0
 if VIDEO_NAME == 'Enter Exit PS5.mp4':
 	exit_tl = (int(IM_WIDTH*0.6),int(IM_HEIGHT*0.40))
 	exit_br = (int(IM_WIDTH*0.75),int(IM_HEIGHT*.47))
+elif VIDEO_NAME == 'countlow.mp4' or VIDEO_NAME == 'counthigh.mp4':
+	exit_tl = (int(IM_WIDTH*0.5),int(IM_HEIGHT*0.55))
+	exit_br = (int(IM_WIDTH*0.75),int(IM_HEIGHT*.64))
 else:
 	exit_tl = (int(IM_WIDTH*0.5),int(IM_HEIGHT*0.05))
 	exit_br = (int(IM_WIDTH*0.6),int(IM_HEIGHT*.95))
