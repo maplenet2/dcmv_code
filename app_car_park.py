@@ -24,8 +24,8 @@ from utils import label_map_util
 IM_WIDTH = 1280
 IM_HEIGHT = 720
 # Constants
-MIN_CONFIDENCE_THRESHOLD = 0.50
-AVG_CONFIDENCE_THRESHOLD = 0.90
+MIN_CONFIDENCE_THRESHOLD = 0.70
+AVG_CONFIDENCE_THRESHOLD = 0.80
 
 '''
 # Setting up gstreamer pipeline for Pi Camera
@@ -59,7 +59,7 @@ def gstreamer_pipeline (
 # Pathing and model setup
 WIN_NAME = 'Car Detector Team 4' 	# Name of Window
 #VIDEO_NAME = 'test2-back.mp4'
-VIDEO_NAME = 'BackTest2.mp4'
+VIDEO_NAME = 'BackTestFast.mp4'
 #VIDEO_NAME = 'Park PS5.mp4'
 #VIDEO_NAME = 'parkstress4.mp4'
 #VIDEO_NAME = 'test1-front.mp4'
@@ -112,19 +112,21 @@ if VIDEO_NAME == 'test1-front.mp4':
 	parking_spot_tl = [(int(IM_WIDTH*0.09),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.38),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.69),int(IM_HEIGHT*0.5))]
 	parking_spot_br = [(int(IM_WIDTH*0.37),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.68),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.99),int(IM_HEIGHT*0.9))]
 else:
-	parking_spot_tl = [(int(IM_WIDTH*0.26),int(IM_HEIGHT*0.4)),(int(IM_WIDTH*0.44),int(IM_HEIGHT*0.4)),(int(IM_WIDTH*0.62),int(IM_HEIGHT*0.4))]
-	parking_spot_br = [(int(IM_WIDTH*0.43),int(IM_HEIGHT*0.65)),(int(IM_WIDTH*0.61),int(IM_HEIGHT*0.65)),(int(IM_WIDTH*0.79),int(IM_HEIGHT*0.65))]
+	parking_spot_tl = [(int(IM_WIDTH*0.27),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.45),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.63),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.12),int(IM_HEIGHT*0.44))]
+	parking_spot_br = [(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.60),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.77),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.24),int(IM_HEIGHT*0.57))]
 spot_count = len(parking_spot_tl)
+t = datetime.datetime.now()
 start_time = ''
-start_time_val = 0
+start_time_val = t
 end_time = ''
-end_time_val = 0
+end_time_val = t
 vehicle_kind = ['N/A', 'N/A', 'N/A', 'N/A']
 entry_id = 0
 
 # Initialize session
 sidfile = open("sessionid.txt", "r+")
 session_id = int(sidfile.read())
+
 
 # Initialize Camera Section
 # 	Initialize for Jetson Nano integrated camera (the pi-camera v2)
@@ -146,7 +148,7 @@ def parking_detector(frame):
 	# Set global variables
 	global park_detector
 	global buffer_counter, car_count, park_counter, pause, entry_id, grab_vehicle, grab_object_class, session_id, start_time_val, end_time_val
-	global start_time, end_time, vehicle_kind
+	global start_time, end_time, vehicle_kind, t
 	
 	# Intialize variables
 	x_coord = []
@@ -182,7 +184,7 @@ def parking_detector(frame):
 	i = 0
 	while (i < len(parking_spot_tl)):
 		cv2.rectangle(frame,parking_spot_tl[i],parking_spot_br[i],(255,20,20),3)
-		cv2.putText(frame,"Parking Spot #1",(parking_spot_tl[i][0]+10,parking_spot_tl[i][1]-10),font,.5,(255,20,255),2,cv2.LINE_AA)
+		cv2.putText(frame,"Parking Spot #" + str(i+1),(parking_spot_tl[i][0]+10,parking_spot_tl[i][1]-10),font,.5,(255,20,255),2,cv2.LINE_AA)
 		i = i + 1
 	
 	# Get class of detected object
@@ -283,7 +285,7 @@ def parking_detector(frame):
 	cv2.putText(frame,'Detection counter: ' + str(park_counter),(10,90),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Buffer counter: ' + str(buffer_counter),(10,110),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Pause: ' + str(pause),(10,130),font,0.5,(51,51,255),1,cv2.LINE_AA)
-	cv2.putText(frame,'Last car parked: ' + end_time,(10,150),font,0.5,(51,51,255),1,cv2.LINE_AA)
+	cv2.putText(frame,'Last car parked: ' + str(end_time),(10,150),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Last vehicle: ' + str(vehicle_kind),(10,170),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Grab object class: ' + str(grab_object_class),(10,190),font,0.5,(51,51,255),1,cv2.LINE_AA)
 	cv2.putText(frame,'Object class: ' + str(object_class),(10,210),font,0.5,(51,51,255),1,cv2.LINE_AA)
@@ -328,7 +330,7 @@ while cv2.getWindowProperty(WIN_NAME,0) >= 0:
 		if cv2.waitKey(1) == ord('q'):
 			break
 		if cv2.waitKey(1) == ord('m'):
-			shutil.move("carcount.txt", "/media/team4/ECS")
+			shutil.move("datatext.txt", "/media/team4/ECS")
 	except TypeError:
 		print('TypeError occurred. If video reached end duration, ignore this.')
 		break
