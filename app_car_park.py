@@ -11,6 +11,7 @@ import numpy as np
 import tensorflow as tf
 import sys
 import time
+import datetime
 import shutil
 #from file_sys_helper import *
 
@@ -59,6 +60,8 @@ def gstreamer_pipeline (
 WIN_NAME = 'Car Detector Team 4' 	# Name of Window
 #VIDEO_NAME = 'test2-back.mp4'
 VIDEO_NAME = 'BackTest2.mp4'
+#VIDEO_NAME = 'Park PS5.mp4'
+#VIDEO_NAME = 'parkstress4.mp4'
 #VIDEO_NAME = 'test1-front.mp4'
 MODEL_NAME = 'faster_rcnn_inception_v2_coco_2018_01_28' 		# Name of the directory that contains the model to be used for prediction, inference_graph
 LABELS = 'mscoco_label_map.pbtxt' 			# .pbtxt file with the labels, labelmap.pbtxt
@@ -113,7 +116,9 @@ else:
 	parking_spot_br = [(int(IM_WIDTH*0.43),int(IM_HEIGHT*0.65)),(int(IM_WIDTH*0.61),int(IM_HEIGHT*0.65)),(int(IM_WIDTH*0.79),int(IM_HEIGHT*0.65))]
 spot_count = len(parking_spot_tl)
 start_time = ''
-end_time = 'N/A'
+start_time_val = 0
+end_time = ''
+end_time_val = 0
 vehicle_kind = ['N/A', 'N/A', 'N/A', 'N/A']
 entry_id = 0
 
@@ -140,7 +145,7 @@ def parking_detector(frame):
 
 	# Set global variables
 	global park_detector
-	global buffer_counter, car_count, park_counter, pause, entry_id, grab_vehicle, grab_object_class, session_id
+	global buffer_counter, car_count, park_counter, pause, entry_id, grab_vehicle, grab_object_class, session_id, start_time_val, end_time_val
 	global start_time, end_time, vehicle_kind
 	
 	# Intialize variables
@@ -171,7 +176,7 @@ def parking_detector(frame):
 		category_index,
 		use_normalized_coordinates=True,
 		line_thickness=8,
-		min_score_thresh=MIN_CONFIDENCE_THRESHOLD)
+		min_score_thresh=MIN_CONFIDENCE_THRESHOLD) 
 		
 	# Draw parking space
 	i = 0
@@ -184,7 +189,7 @@ def parking_detector(frame):
 	object_scores = float(scores[0][0])
 	
 	# Get current time (from system)
-	t = time.localtime()
+	t = datetime.datetime.now()
 	
 	# Check if detected object is a valid motor vehicle, (1 = Sedan, 2 = Truck, 3 = Bus, 4 = Motorcycle)
 	# Then get the center x and y position:		
@@ -220,7 +225,8 @@ def parking_detector(frame):
 			pause[i] = 0
 			grab_vehicle[i] = 0
 			park_detector[i] = False
-			end_time = time.strftime("%H:%M:%S", t)
+			end_time_val = t
+			end_time = t.strftime("%H:%M:%S")
 			datafile = open("datatext.txt", "a+")
 			idfile = open("entryid.txt", "r+")
 			entry_id = int(idfile.read())
@@ -232,7 +238,8 @@ def parking_detector(frame):
 			datafile.write("%s\t" % vehicle_kind[i]) #Vehicle type
 			car_count[i] = car_count[i] + 1
 			datafile.write("%d\t" % car_count[i]) #car count
-			datafile.write("%d\n" % session_id) #session
+			datafile.write("%d\t" % session_id) #session
+			datafile.write("%s\n" % str(end_time_val - start_time_val)[:-7]) #duration
 			datafile.close()
 			entry_id = entry_id + 1
 			idfile.seek(0)
@@ -244,7 +251,8 @@ def parking_detector(frame):
 		if ((park_counter[i] > 30) and (pause[i] == 0)):
 			park_detector[i] = True
 			pause[i] = 1	
-			start_time = time.strftime("%H:%M:%S", t)	
+			start_time = t.strftime("%H:%M:%S")	
+			start_time_val = t
 			
 		# If pause flag is set, draw message on screen
 		if pause[i] == 1:
@@ -320,7 +328,7 @@ while cv2.getWindowProperty(WIN_NAME,0) >= 0:
 		if cv2.waitKey(1) == ord('q'):
 			break
 		if cv2.waitKey(1) == ord('m'):
-			shutil.move("datatext.txt", "/media/team4/ECS")
+			shutil.move("carcount.txt", "/media/team4/ECS")
 	except TypeError:
 		print('TypeError occurred. If video reached end duration, ignore this.')
 		break
