@@ -59,7 +59,8 @@ def gstreamer_pipeline (
 # Pathing and model setup
 WIN_NAME = 'Car Detector Team 4' 	# Name of Window
 #VIDEO_NAME = 'test2-back.mp4'
-VIDEO_NAME = 'motorcycle_park2_uncut.mp4'
+#VIDEO_NAME = 'motorcycle_park2_uncut.mp4'
+VIDEO_NAME = 'MotorcycleOnly.mp4'
 #VIDEO_NAME = 'Park PS5.mp4'
 #VIDEO_NAME = 'parkstress4.mp4'
 #VIDEO_NAME = 'test1-front.mp4'
@@ -111,7 +112,7 @@ pause = [0, 0, 0, 0]
 if VIDEO_NAME == 'test1-front.mp4':
 	parking_spot_tl = [(int(IM_WIDTH*0.09),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.38),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.69),int(IM_HEIGHT*0.5))]
 	parking_spot_br = [(int(IM_WIDTH*0.37),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.68),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.99),int(IM_HEIGHT*0.9))]
-elif VIDEO_NAME == 'motorcycle_park2_uncut.mp4':
+elif VIDEO_NAME == 'motorcycle_park2_uncut.mp4' or VIDEO_NAME == 'MotorcycleOnly.mp4':
 	parking_spot_tl = [(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.48),int(IM_HEIGHT*0.39)),(int(IM_WIDTH*0.53),int(IM_HEIGHT*0.36)),(int(IM_WIDTH*0.34),int(IM_HEIGHT*0.44))]#(int(IM_WIDTH*0.24),int(IM_HEIGHT*0.44))]
 	parking_spot_br = [(int(IM_WIDTH*0.49),int(IM_HEIGHT*0.55)),(int(IM_WIDTH*0.54),int(IM_HEIGHT*0.51)),(int(IM_WIDTH*0.59),int(IM_HEIGHT*0.49)),(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.57))]#(int(IM_WIDTH*0.34),int(IM_HEIGHT*0.57))]
 else:
