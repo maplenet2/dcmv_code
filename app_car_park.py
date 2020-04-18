@@ -59,7 +59,7 @@ def gstreamer_pipeline (
 # Pathing and model setup
 WIN_NAME = 'Car Detector Team 4' 	# Name of Window
 #VIDEO_NAME = 'test2-back.mp4'
-VIDEO_NAME = 'BackTestFast.mp4'
+VIDEO_NAME = 'motorcycle_park2_uncut.mp4'
 #VIDEO_NAME = 'Park PS5.mp4'
 #VIDEO_NAME = 'parkstress4.mp4'
 #VIDEO_NAME = 'test1-front.mp4'
@@ -111,6 +111,9 @@ pause = [0, 0, 0, 0]
 if VIDEO_NAME == 'test1-front.mp4':
 	parking_spot_tl = [(int(IM_WIDTH*0.09),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.38),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.69),int(IM_HEIGHT*0.5))]
 	parking_spot_br = [(int(IM_WIDTH*0.37),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.68),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.99),int(IM_HEIGHT*0.9))]
+elif VIDEO_NAME == 'motorcycle_park2_uncut.mp4':
+	parking_spot_tl = [(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.48),int(IM_HEIGHT*0.39)),(int(IM_WIDTH*0.53),int(IM_HEIGHT*0.36)),(int(IM_WIDTH*0.34),int(IM_HEIGHT*0.44))]#(int(IM_WIDTH*0.24),int(IM_HEIGHT*0.44))]
+	parking_spot_br = [(int(IM_WIDTH*0.49),int(IM_HEIGHT*0.55)),(int(IM_WIDTH*0.54),int(IM_HEIGHT*0.51)),(int(IM_WIDTH*0.59),int(IM_HEIGHT*0.49)),(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.57))]#(int(IM_WIDTH*0.34),int(IM_HEIGHT*0.57))]
 else:
 	parking_spot_tl = [(int(IM_WIDTH*0.27),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.45),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.63),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.12),int(IM_HEIGHT*0.44))]
 	parking_spot_br = [(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.60),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.77),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.24),int(IM_HEIGHT*0.57))]
@@ -259,14 +262,14 @@ def parking_detector(frame):
 		# If pause flag is set, draw message on screen
 		if pause[i] == 1:
 			if park_detector[i] == True:
-				offset = int(20*i)
+				offset = int(30*i)
 				spot_num = i + 1
 				spot_name = str('Spot' + str(spot_num) + ' is occupied')
 				spot_time = str('Car parked at: ' + str(start_time))
-				spot_offset1 = int(190+offset)
+				spot_offset1 = int(300+offset)
 				spot_offset2 = int(int(IM_HEIGHT*.85)+offset)
-				cv2.putText(frame,spot_name,(int(IM_WIDTH*.1),spot_offset2),font,.75,(95,176,23),2,cv2.LINE_AA)			
-				cv2.putText(frame,spot_time,(int(IM_WIDTH*.5),spot_offset1),font,.75,(51,51,255),2,cv2.LINE_AA)
+				cv2.putText(frame,spot_name,(int(IM_WIDTH*.15),spot_offset2),font,.75,(95,176,23),2,cv2.LINE_AA)			
+				cv2.putText(frame,spot_time,(int(IM_WIDTH*.65),spot_offset1),font,.75,(51,51,255),2,cv2.LINE_AA)
 			
 		# Get name of object to be written in file
 		if grab_object_class[i] == 3:
