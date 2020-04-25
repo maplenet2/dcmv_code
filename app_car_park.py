@@ -27,43 +27,9 @@ IM_HEIGHT = 720
 MIN_CONFIDENCE_THRESHOLD = 0.70
 AVG_CONFIDENCE_THRESHOLD = 0.80
 
-'''
-# Setting up gstreamer pipeline for Pi Camera
-def gstreamer_pipeline (
-	capture_width=IM_WIDTH, 
-	capture_height=IM_HEIGHT, 
-	display_width=IM_WIDTH, 
-	display_height=IM_HEIGHT, 
-	framerate=60, 
-	flip_method=0
-):   
-	return (
-		'nvarguscamerasrc ! ' 
-		'video/x-raw(memory:NVMM), '
-		'width=(int)%d, height=(int)%d, '
-		'format=(string)NV12, framerate=(fraction)%d/1 ! '
-		'nvvidconv flip-method=%d ! '
-		'video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! '
-		'videoconvert ! '
-		'video/x-raw, format=(string)BGR ! appsink'
-		% (
-			capture_width,
-			capture_height,
-			framerate,
-			flip_method,
-			display_width,
-			display_height
-		)
-	)
-'''
 # Pathing and model setup
 WIN_NAME = 'Car Detector Team 4' 	# Name of Window
-#VIDEO_NAME = 'test2-back.mp4'
-#VIDEO_NAME = 'motorcycle_park2_uncut.mp4'
-VIDEO_NAME = 'MotorcycleOnly.mp4'
-#VIDEO_NAME = 'Park PS5.mp4'
-#VIDEO_NAME = 'parkstress4.mp4'
-#VIDEO_NAME = 'test1-front.mp4'
+#VIDEO_NAME = 'MotorcycleOnly.mp4'
 MODEL_NAME = 'faster_rcnn_inception_v2_coco_2018_01_28' 		# Name of the directory that contains the model to be used for prediction, inference_graph
 LABELS = 'mscoco_label_map.pbtxt' 			# .pbtxt file with the labels, labelmap.pbtxt
 NUM_CLASSES = 80 					# Number of classes in the identifier model
@@ -106,37 +72,25 @@ buffer_counter = [0, 0, 0, 0]
 car_count = [0, 0, 0, 0]
 grab_vehicle = [0, 0, 0, 0]
 grab_object_class = [0, 0, 0, 0]
-park_detector = [False, False, False, False]
 park_counter = [0, 0, 0, 0]
 pause = [0, 0, 0, 0]
-if VIDEO_NAME == 'test1-front.mp4':
-	parking_spot_tl = [(int(IM_WIDTH*0.09),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.38),int(IM_HEIGHT*0.5)),(int(IM_WIDTH*0.69),int(IM_HEIGHT*0.5))]
-	parking_spot_br = [(int(IM_WIDTH*0.37),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.68),int(IM_HEIGHT*0.9)),(int(IM_WIDTH*0.99),int(IM_HEIGHT*0.9))]
-elif VIDEO_NAME == 'motorcycle_park2_uncut.mp4' or VIDEO_NAME == 'MotorcycleOnly.mp4':
-	parking_spot_tl = [(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.48),int(IM_HEIGHT*0.39)),(int(IM_WIDTH*0.53),int(IM_HEIGHT*0.36)),(int(IM_WIDTH*0.34),int(IM_HEIGHT*0.44))]#(int(IM_WIDTH*0.24),int(IM_HEIGHT*0.44))]
-	parking_spot_br = [(int(IM_WIDTH*0.49),int(IM_HEIGHT*0.55)),(int(IM_WIDTH*0.54),int(IM_HEIGHT*0.51)),(int(IM_WIDTH*0.59),int(IM_HEIGHT*0.49)),(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.57))]#(int(IM_WIDTH*0.34),int(IM_HEIGHT*0.57))]
-else:
-	parking_spot_tl = [(int(IM_WIDTH*0.27),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.45),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.63),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.12),int(IM_HEIGHT*0.44))]
-	parking_spot_br = [(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.60),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.77),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.24),int(IM_HEIGHT*0.57))]
+park_detector = [False, False, False, False]
+vehicle_kind = ['N/A', 'N/A', 'N/A', 'N/A']
+parking_spot_tl = [(int(IM_WIDTH*0.27),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.45),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.63),int(IM_HEIGHT*0.44)),(int(IM_WIDTH*0.12),int(IM_HEIGHT*0.44))]
+parking_spot_br = [(int(IM_WIDTH*0.42),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.60),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.77),int(IM_HEIGHT*0.57)),(int(IM_WIDTH*0.24),int(IM_HEIGHT*0.57))]
 spot_count = len(parking_spot_tl)
 t = datetime.datetime.now()
 start_time = ''
 start_time_val = t
 end_time = ''
 end_time_val = t
-vehicle_kind = ['N/A', 'N/A', 'N/A', 'N/A']
 entry_id = 0
 
 # Initialize session
 sidfile = open("sessionid.txt", "r+")
 session_id = int(sidfile.read())
 
-
-# Initialize Camera Section
-# 	Initialize for Jetson Nano integrated camera (the pi-camera v2)
-#   cap = cv2.VideoCapture(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
-# 
-#	Initialize for RPi or Windows
+# Initialize for RPi or Windows
 #cap = cv2.VideoCapture(1)
 #ret_val = cap.set(3,IM_WIDTH)
 #ret_val = cap.set(4,IM_HEIGHT)

@@ -28,12 +28,7 @@ FRAME_BUFFER = 5
 
 # Pathing and model setup
 WIN_NAME = 'Team 4 - Car Count' 	# Name of Window
-#VIDEO_NAME = 'count1.mp4' #VIDEO_NAME = 'countlow.mp4'
-#VIDEO_NAME = '20200327_124448.mp4' #'bustest.m4v'
-#VIDEO_NAME = 'busandtruck_final2.mp4'
-#VIDEO_NAME = 'TruckOnly2_1.mp4'
-#VIDEO_NAME = 'TruckOnly_1.mp4'
-VIDEO_NAME = 'BusOnly.mp4'
+#VIDEO_NAME = 'BusOnly.mp4'
 #MODEL_NAME = 'faster_rcnn_inception_v2_coco_2018_01_28'  		# Name of the directory that contains the model to be used for prediction
 MODEL_NAME = 'ssd_mobilenet_v2_coco_2018_03_29' 
 LABELS = 'mscoco_label_map.pbtxt' 			# .pbtxt file with the labels
@@ -77,21 +72,8 @@ entrance_buffer_counter = 0
 entrance_detector = False
 entrance_detection_counter = 0
 entrance_pause = 0
-if VIDEO_NAME == 'Enter Exit PS5.mp4':
-	entrance_tl = (int(IM_WIDTH*0.3),int(IM_HEIGHT*0.38))
-	entrance_br = (int(IM_WIDTH*0.5),int(IM_HEIGHT*.43))
-elif VIDEO_NAME == 'countlow.mp4' or VIDEO_NAME == 'counthigh.mp4':
-	entrance_tl = (int(IM_WIDTH*0.27),int(IM_HEIGHT*0.51))
-	entrance_br = (int(IM_WIDTH*0.47),int(IM_HEIGHT*.61))
-elif VIDEO_NAME == 'TruckOnly_1.mp4' or VIDEO_NAME == 'busandtruck_final2.mp4' or VIDEO_NAME == 'BusOnly.mp4':
-	entrance_tl = (int(IM_WIDTH*0.32),int(IM_HEIGHT*0.3))
-	entrance_br = (int(IM_WIDTH*0.43),int(IM_HEIGHT*.70))
-elif VIDEO_NAME == 'TruckOnly2_1.mp4':
-	entrance_tl = (int(IM_WIDTH*0.75),int(IM_HEIGHT*0.1))
-	entrance_br = (int(IM_WIDTH*0.83),int(IM_HEIGHT*.9))
-else:
-	entrance_tl = (int(IM_WIDTH*0.7),int(IM_HEIGHT*0.05))
-	entrance_br = (int(IM_WIDTH*0.9),int(IM_HEIGHT*.95))
+entrance_tl = (int(IM_WIDTH*0.7),int(IM_HEIGHT*0.05))
+entrance_br = (int(IM_WIDTH*0.9),int(IM_HEIGHT*.95))
 entrance_car_counts = 0
 
 # Initialize variables for exit detection
@@ -100,21 +82,8 @@ exit_buffer_counter = 0
 exit_detector = False
 exit_detection_counter = 0
 exit_pause = 0
-if VIDEO_NAME == 'Enter Exit PS5.mp4':
-	exit_tl = (int(IM_WIDTH*0.6),int(IM_HEIGHT*0.40))
-	exit_br = (int(IM_WIDTH*0.75),int(IM_HEIGHT*.47))
-elif VIDEO_NAME == 'countlow.mp4' or VIDEO_NAME == 'counthigh.mp4':
-	exit_tl = (int(IM_WIDTH*0.5),int(IM_HEIGHT*0.55))
-	exit_br = (int(IM_WIDTH*0.75),int(IM_HEIGHT*.64))
-elif VIDEO_NAME == 'TruckOnly_1.mp4' or VIDEO_NAME == 'busandtruck_final2.mp4' or VIDEO_NAME == 'BusOnly.mp4':
-	exit_tl = (int(IM_WIDTH*0.67),int(IM_HEIGHT*0.3))
-	exit_br = (int(IM_WIDTH*0.74),int(IM_HEIGHT*.7))
-elif VIDEO_NAME == 'TruckOnly2_1.mp4':
-	exit_tl = (int(IM_WIDTH*0.20),int(IM_HEIGHT*0.1))
-	exit_br = (int(IM_WIDTH*0.28),int(IM_HEIGHT*.9))
-else:
-	exit_tl = (int(IM_WIDTH*0.5),int(IM_HEIGHT*0.05))
-	exit_br = (int(IM_WIDTH*0.6),int(IM_HEIGHT*.95))
+exit_tl = (int(IM_WIDTH*0.5),int(IM_HEIGHT*0.05))
+exit_br = (int(IM_WIDTH*0.6),int(IM_HEIGHT*.95))
 exit_car_counts = 0
 
 # Initialize other global variables
