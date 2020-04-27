@@ -1,8 +1,10 @@
-# Using Pi Camera V2 on Jetson Nano
-# Code reference to:
+# Car Counting Python Code
+#
+# Code reference to: Tutorial to set up TensorFlow Object Detection API on the Raspberry Pi
+# by: https://github.com/EdjeElectronics
 #
 # Team 4
-# Michael Khoo
+# Contributors: Michael Khoo, Ryan Uda
 #
 
 import os
@@ -158,7 +160,7 @@ def parking_detector(frame):
 		# And check if detected object is a valid motor vehicle, (3 = car, 4 = bus, 6 = truck, 8 = motorcycle)
 		object_class = int(classes[0][i])
 		object_scores = float(scores[0][i])
-		if((object_scores >= AVG_CONFIDENCE_THRESHOLD) and (object_class == 3 or object_class == 4 or object_class == 6 or object_class == 8)): #and (entrance_pause == 0)):
+		if((object_scores >= AVG_CONFIDENCE_THRESHOLD) and (object_class == 3 or object_class == 4 or object_class == 6 or object_class == 8)):
 			
 			# Get the center x and y position
 			x = int(((boxes[0][i][1]+boxes[0][i][3])/2)*IM_WIDTH)

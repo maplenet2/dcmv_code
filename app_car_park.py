@@ -1,8 +1,10 @@
-# Using Pi Camera V2 on Jetson Nano
-# Code reference to:
+# Car Counting Python Code
+#
+# Code reference to: Tutorial to set up TensorFlow Object Detection API on the Raspberry Pi
+# by: https://github.com/EdjeElectronics
 #
 # Team 4
-# Michael Khoo
+# Contributor: Michael Khoo
 #
 
 import os
